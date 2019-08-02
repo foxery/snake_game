@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<style type="text/css">
+		body {
+			margin: 0;
+		}
+
+		#container {
+			width: 100%;
+			margin: 0 auto;
+		}
+
+		#ground {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 182px;
+			background-size: 20px;
+			background-repeat: repeat;
+			background-position: top left;
+			background-image: url(img/grid.png)
+		}
+
+		.food {
+			position: absolute;
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center;
+		}
+
+		.block {
+			float: left;
+			width: 20px;
+			height: 20px;
+			overflow: hidden;
+		}
+
+		.snake-block {
+			position: absolute;
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center;
+		}
+
+		#h-down,
+		#t-down {
+			transform: rotate(90deg);
+			-ms-transform: rotate(90deg);
+			/* IE 9 */
+			-webkit-transform: rotate(90deg);
+			/* Safari and Chrome */
+			-o-transform: rotate(90deg);
+			/* Opera */
+			-moz-transform: rotate(90deg);
+			/* Firefox */
+		}
+
+		#h-up,
+		#t-up {
+			transform: rotate(-90deg);
+			-ms-transform: rotate(-90deg);
+			/* IE 9 */
+			-webkit-transform: rotate(-90deg);
+			/* Safari and Chrome */
+			-o-transform: rotate(-90deg);
+			/* Opera */
+			-moz-transform: rotate(- 90deg);
+			/* Firefox */
+		}
+
+		#h-left,
+		#t-left {
+			transform: rotate(180deg);
+			-ms-transform: rotate(180deg);
+			/* IE 9 */
+			-webkit-transform: rotate(180deg);
+			/* Safari and Chrome */
+			-o-transform: rotate(180deg);
+			/* Opera */
+			-moz-transform: rotate(180deg);
+			/* Firefox */
+		}
+
+		#keys {
+			padding: 20px 70px;
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center;
+			background-image: url("img/border.png");
+			text-align: center;
+			background-color: #fff;
+			width: auto;
+			white-space: nowrap;
+		}
+
+		#keys img {
+			height: 50px;
+		}
+
+		#keys img+img {
+			margin-left: 5px;
+		}
+
+		.keys-wrapper {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			padding-top: 44px;
+			padding-bottom: 44px;
+			background-color: #FEFAF5;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="container">
+		<div id="ground">
+		</div>
+		<div class="keys-wrapper">
+			<div id="keys">
+
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var eating = '';
+		var keysImg = ['甘', '草', '医', '生', '四', '周', '年', '快', '乐'];
+		var oGround = document.getElementById('ground');
+		var oSubDiv = createDiv();
+		oSubDiv.style.display = "none";
+		oGround.appendChild(oSubDiv);
+
+		// 显示关键字
+		var oKeys = document.getElementById('keys');
+		for (var i = 0; i < keysImg.length; i++) {
+			var oImg = document.createElement('img');
+			oImg.src = "img/" + keysImg[i] + "_default.png";
+			oImg.id = keysImg[i];
+			oImg.className = "eating";
+			oKeys.appendChild(oImg);
+		}
+
+		//创建蛇
+		var aSnaker = [];
+		for (var i = 15; i > 0; i--) {
+			var oDiv = document.createElement('div');
+			oDiv.style.left = i * 20 + 'px';
+			oDiv.style.top = '60px';
+			oDiv.className = "block snake-block";
+			if (i == 15) {
+				oDiv.style.backgroundImage = "url(img/snake_head.png)";
+			} else if (i == 1) {
+				oDiv.style.backgroundImage = "url(img/snake_tail_right.png)";
+			}
+			else {
+				oDiv.style.backgroundColor = "#333";
+			}
+
+			aSnaker.push(oDiv);
+			oGround.appendChild(oDiv);
+		}
+
+		var oFood;
+		function divPos() {
+			var iLeft, iTop;
+			var flag = false;
+			do {
+				iLeft = parseInt(Math.random() * 50) * 20 + 'px';
+				iTop = parseInt(Math.random() * 25) * 20 + 'px';
+
+				for (var i = 0; i < aSnaker.length; i++) {
+					if (iLeft == aSnaker[i].style.left && iTop == aSnaker[i].style.top) {
+						flag = true;
+						break;
+					}
+				}
+			} while (flag)
+			if (parseInt(iLeft) > ((oGround.clientWidth - 20))) {
+				iLeft = oGround.clientWidth - oGround.clientWidth % 20 - 20 + "px";
+			}
+			return { iLeft: iLeft, iTop: iTop };
+		}
+		function createNode() {//创建方块
+			var ran = Math.floor(Math.random() * 9);
+			oFood = document.createElement('div');
+			oFood.style.left = divPos().iLeft;
+			oFood.style.top = divPos().iTop;
+			oFood.className = 'block food';
+			oFood.style.backgroundImage = "url(img/" + keysImg[ran] + ".png)";
+			console.info(ran);
+			eating = keysImg[ran];
+			console.info(eating);
+			oGround.appendChild(oFood);
+		}
+		createNode();
+
+		function createDiv() {
+			var oDiv = document.createElement("div");
+			oDiv.className = "block";
+			oDiv.style.backgroundColor = "#333";
+			oDiv.style.position = "absolute";
+			return oDiv;
+		}
+		function addDiv(tailTop, tailLeft) {
+			var oDiv = createDiv();
+			oDiv.style.top = tailTop + "px";
+			oDiv.style.left = tailLeft + "px";
+			oGround.appendChild(oDiv);
+			aSnaker.splice(aSnaker.length - 1, 0, oDiv);
+		}
+
+		//方块添加到尾巴的前面后计算尾巴现在应有的坐标
+		function priTail(headLeft, headTop, tailLeft, tailTop, moveDir) {
+			if (tailLeft == headLeft || moveDir == "right" || moveDir == "left") {
+				if (tailTop > headTop)
+					tailTop -= 20;
+				else if (tailTop < headTop)
+					tailTop += 20;
+			} else if (tailTop == headTop || moveDir == "up" || moveDir == "down") {
+				if (tailLeft > headLeft)
+					tailLeft -= 20;
+				else if (tailLeft > headLeft)
+					tailLeft += 20;
+			}
+			return {
+				tailTop: tailTop,
+				tailLeft: tailLeft
+			};
+		}
+
+		var moveDir = 'right';
+		function move() {
+			//蛇身整体移动
+			for (var i = aSnaker.length - 1; i > 0; i--) {
+				aSnaker[i].style.left = aSnaker[i - 1].style.left;
+				aSnaker[i].style.top = aSnaker[i - 1].style.top;
+			}
+			var snakeHead = aSnaker[0];
+			var headLeft = parseInt(snakeHead.style.left);
+			var headTop = parseInt(snakeHead.style.top);
+			switch (moveDir) {
+				case "left":
+					headLeft -= 20;
+					break;
+				case "right":
+					headLeft += 20;
+					break;
+				case "up":
+					headTop -= 20;
+					break;
+				case "down":
+					headTop += 20;
+					break;
+			}
+			snakeHead.style.left = headLeft + 'px';
+			snakeHead.style.top = headTop + 'px';
+			aSnaker[0].id = "h-" + moveDir;
+
+			//与蛇身相撞结束游戏
+			for (var i = 1; i < aSnaker.length; i++) {
+				if (snakeHead.style.left == aSnaker[i].style.left && snakeHead.style.top == aSnaker[i].style.top) {
+					reStart();
+				}
+			}
+
+			//撞墙游戏结束
+			console.info(snakeHead.style.top);
+			if (headLeft < 0 || headTop < 0 || headTop >= ((oGround.clientHeight - 20)) || headLeft >= ((oGround.clientWidth - 20))) {
+				reStart();
+			}
+
+			var snakeTail = aSnaker[aSnaker.length - 1];//获取当前的尾巴
+			//尾巴的转向，根据前一个的位置设置方向
+			if (snakeTail.style.top < aSnaker[aSnaker.length - 2].style.top) {
+				snakeTail.id = "t-down";
+			}
+			else if (snakeTail.style.top > aSnaker[aSnaker.length - 2].style.top) {
+				snakeTail.id = "t-up";
+			}
+			if (snakeTail.style.left > aSnaker[aSnaker.length - 2].style.left) {
+				snakeTail.id = "t-left";
+			}
+			else if (snakeTail.style.left < aSnaker[aSnaker.length - 2].style.left) {
+				snakeTail.id = "";
+			}
+			var tailLeft = parseInt(snakeTail.style.left);
+			var tailTop = parseInt(snakeTail.style.top);
+
+			//吃到的方块添加到尾巴的前面，分别改变尾巴和方块的定位坐标值
+			console.log(snakeHead.style.left, oFood.style.left, snakeHead.style.top, oFood.style.top);
+			if (snakeHead.style.left == oFood.style.left && snakeHead.style.top == oFood.style.top) {
+				tailLeft = snakeTail.style.left;
+				tailTop = snakeTail.style.top;
+				oFood.style.backgroundColor = "#333";
+				oFood.style.backgroundImage = "";
+				oFood.style.top = tailTop + "px";
+				oFood.style.left = tailLeft + "px";
+				aSnaker.splice(aSnaker.length - 1, 0, oFood);
+				tailTop = priTail(headLeft, headTop, tailLeft, tailTop, moveDir).tailTop;
+				tailLeft = priTail(headLeft, headTop, tailLeft, tailTop, moveDir).tailLeft;
+
+				tailTop = priTail(headLeft, headTop, tailLeft, tailTop, moveDir).tailTop;
+				tailLeft = priTail(headLeft, headTop, tailLeft, tailTop, moveDir).tailLeft;
+				snakeTail.style.left = tailLeft + 'px';
+				snakeTail.style.top = tailTop + 'px';
+				//吃到方块后 显示相应文字 并检测是否吃满
+				document.getElementById(eating).src = "img/" + eating + "_active.png";
+				document.getElementById(eating).className += " eated";
+
+				var all_eated = document.getElementsByClassName('eating');
+				var result = 'success';
+				for (var i = 0, len = all_eated.length; i < len; i++) {
+					if (all_eated[i].classList.contains('eated') == false) {
+						result = "fail";
+						break;
+					}
+				}
+				if (result == 'success') {
+					setTimeout(() => {
+						window.location.href = "success.html";
+					}, 300);
+				} else {
+					createNode();
+				}
+			}
+		}
+
+		var timer;
+		// 自动开始
+		setTimeout(() => {
+			openTimer();
+		}, 300);
+
+
+		var perTime = 80;
+		function openTimer() {
+			timer = setInterval(function () {//定时器
+				move();
+			}, perTime);
+		}
+
+		function reStart() {
+			clearInterval(timer);
+			setTimeout(() => {
+				window.location.href = "fail.html";
+			}, 300);
+		}
+
+		document.onkeydown = function (e) {//设置转向
+			e = e || window.event;
+			var keyCode = e.which || e.keyCode;
+			switch (keyCode) {
+				case 37:
+					if (moveDir != "right") {
+						moveDir = "left";
+					}
+					break;
+				case 38:
+					if (moveDir != "down") {
+						moveDir = "up";
+					}
+					break;
+				case 39:
+					if (moveDir != "left") {
+						moveDir = "right";
+					}
+					break;
+				case 40:
+					if (moveDir != "up") {
+						moveDir = "down";
+					}
+					break;
+				//空格开始
+				case 32:
+					openTimer();
+					break;
+			}
+		}
+	</script>
+</body>
+
+</html>
